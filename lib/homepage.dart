@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:turtlegame/barriers.dart';
 import 'package:turtlegame/turtle.dart';
 
 class Homepage extends StatefulWidget {
@@ -17,22 +18,67 @@ class _HomepageState extends State<Homepage> {
   double height = 0;
   double initialHeight = turtleYaxis;
   bool gameHasStarted = false;
+  bool gameover = false;
+  int score = 0;
+  int bestscore = 0;
+
+  static double barrier1Xaxis = 1;
+  double barrier2Xaxis = barrier1Xaxis + 1.5;
+
+  double barrier1Size = 200.0;
+  double barrier2Size = 100.0;
 
   void startGame() {
-    gameHasStarted = true;
+    setState(() {
+      gameHasStarted = true;
+    });
+
     Timer.periodic(const Duration(milliseconds: 60), (timer) {
       time += 0.05;
       height = -4.9 * (time * time) + 2.8 * time;
+      if (barrier1Xaxis < -1.7) {
+        barrier1Xaxis = 2.2;
+        barrier1Size = 50 + Random().nextDouble() * 300;
+        score++;
+      }
+      if (barrier2Xaxis < -1.7) {
+        barrier2Xaxis = 2.2;
+        barrier2Size = 50 + Random().nextDouble() * 300;
+        score++;
+      }
+
       setState(() {
+        barrier1Xaxis -= 0.05;
+        barrier2Xaxis -= 0.05;
         turtleYaxis = initialHeight - height;
       });
 
-      if (turtleYaxis > 0.85) {
+      if (turtleYaxis > 1.05) {
         setState(() {
           timer.cancel();
+          turtleYaxis = 1.05;
+          gameover = true;
           gameHasStarted = false;
+
+          if (score > bestscore) {
+            bestscore = score;
+          }
         });
       }
+    });
+  }
+
+  void reset() {
+    setState(() {
+      time = 0;
+      turtleYaxis = 0;
+      initialHeight = turtleYaxis;
+      barrier1Xaxis = 1;
+      barrier2Xaxis = barrier1Xaxis + 1.5;
+      barrier1Size = 200.0;
+      barrier2Size = 100.0;
+      gameover = false;
+      score = 0;
     });
   }
 
@@ -51,67 +97,112 @@ class _HomepageState extends State<Homepage> {
           flex: 5,
           child: GestureDetector(
             onTap: () {
-              if (gameHasStarted) {
-                jump();
+              if (!gameover) {
+                if (gameHasStarted) {
+                  jump();
+                } else {
+                  startGame();
+                }
               } else {
-                startGame();
+                reset();
               }
             },
-            child: AnimatedContainer(
-              alignment: Alignment(-0.7, turtleYaxis),
-              duration: Duration(milliseconds: 0),
-              color: Colors.blue[900],
-              child: MyTurtle(),
+            child: Stack(
+              children: [
+                AnimatedContainer(
+                  alignment: Alignment(-0.7, turtleYaxis),
+                  duration: const Duration(milliseconds: 0),
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('lib/images/fundo.jpg'),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                  child: const MyTurtle(),
+                ),
+                AnimatedContainer(
+                  alignment: Alignment(barrier1Xaxis, 1.1),
+                  duration: const Duration(milliseconds: 0),
+                  child: MyBarrier(
+                    size: barrier1Size,
+                  ),
+                ),
+                AnimatedContainer(
+                  alignment: Alignment(barrier1Xaxis, -1.1),
+                  duration: const Duration(milliseconds: 0),
+                  child: MyBarrier(
+                    size: 400 - barrier1Size,
+                  ),
+                ),
+                AnimatedContainer(
+                  alignment: Alignment(barrier2Xaxis, 1.1),
+                  duration: const Duration(milliseconds: 0),
+                  child: MyBarrier(
+                    size: barrier2Size,
+                  ),
+                ),
+                AnimatedContainer(
+                  alignment: Alignment(barrier2Xaxis, -1.1),
+                  duration: const Duration(milliseconds: 0),
+                  child: MyBarrier(
+                    size: 400 - barrier2Size,
+                  ),
+                ),
+                Container(
+                  alignment: const Alignment(0, -0.5),
+                  child: gameHasStarted
+                      ? const Text('')
+                      : const Text(
+                          'CLIQUE PARA JOGAR',
+                          style: TextStyle(
+                            letterSpacing: 7,
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ],
             ),
-          ),
-        ),
-        SizedBox(
-          height: 15,
-          child: Image.asset(
-            'lib/images/lixo.jpg',
-            // Estica a imagem para preencher a largura da tela
-            width: double.infinity,
-            // Mantém a proporção da imagem
-            fit: BoxFit.fill,
-            
           ),
         ),
         Expanded(
           child: Container(
-              color: Colors.brown,
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Pontuação',
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        '0',
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Melhor',
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        '10',
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                      ),
-                    ],
-                  ),
-                ],
-              )),
+            color: Colors.brown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Pontuação',
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      score.toString(),
+                      style: const TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Melhor',
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      bestscore.toString(),
+                      style: const TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ]),
     );
