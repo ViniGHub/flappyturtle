@@ -13,19 +13,22 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  double gameScreenSize = 0;
+
   static double turtleYaxis = 0;
   double time = 0;
   double height = 0;
   double initialHeight = turtleYaxis;
   bool gameHasStarted = false;
   bool gameover = false;
+  double hitBoxYAxis = 0.45;
   int score = 0;
   int bestscore = 0;
 
   static double barrier1Xaxis = 1;
-  double barrier2Xaxis = barrier1Xaxis + 1.5;
+  double barrier2Xaxis = barrier1Xaxis + 1.75;
 
-  double barrier1Size = 200.0;
+  double barrier1Size = 250.0;
   double barrier2Size = 100.0;
 
   void startGame() {
@@ -36,34 +39,28 @@ class _HomepageState extends State<Homepage> {
     Timer.periodic(const Duration(milliseconds: 60), (timer) {
       time += 0.05;
       height = -4.9 * (time * time) + 2.8 * time;
-      if (barrier1Xaxis < -1.7) {
-        barrier1Xaxis = 2.2;
-        barrier1Size = 50 + Random().nextDouble() * 300;
-        score++;
-      }
-      if (barrier2Xaxis < -1.7) {
-        barrier2Xaxis = 2.2;
-        barrier2Size = 50 + Random().nextDouble() * 300;
-        score++;
-      }
 
       setState(() {
+        if (barrier1Xaxis < -1.75) {
+          barrier1Xaxis = 2.2;
+          barrier1Size = 250.0;
+          score++;
+          hitBoxYAxis = 0.87;
+        }
+        if (barrier2Xaxis < -1.75) {
+          barrier2Xaxis = 2.2;
+          barrier2Size = 100.0;
+          score++;
+          hitBoxYAxis = 0.45;
+        }
+
         barrier1Xaxis -= 0.05;
         barrier2Xaxis -= 0.05;
         turtleYaxis = initialHeight - height;
       });
 
-      if (turtleYaxis > 1.05) {
-        setState(() {
-          timer.cancel();
-          turtleYaxis = 1.05;
-          gameover = true;
-          gameHasStarted = false;
-
-          if (score > bestscore) {
-            bestscore = score;
-          }
-        });
+      if (colision()) {
+        timer.cancel();
       }
     });
   }
@@ -74,12 +71,94 @@ class _HomepageState extends State<Homepage> {
       turtleYaxis = 0;
       initialHeight = turtleYaxis;
       barrier1Xaxis = 1;
-      barrier2Xaxis = barrier1Xaxis + 1.5;
-      barrier1Size = 200.0;
+      barrier2Xaxis = barrier1Xaxis + 1.75;
+      barrier1Size = 250.0;
       barrier2Size = 100.0;
       gameover = false;
       score = 0;
+      hitBoxYAxis = 0.45;
     });
+  }
+
+  bool colision() {
+    if (turtleYaxis > 1.05) {
+      setState(() {
+        turtleYaxis = 1.05;
+        gameover = true;
+        gameHasStarted = false;
+
+        if (score > bestscore) {
+          bestscore = score;
+        }
+      });
+      return true;
+    } else if (turtleYaxis < -1.05) {
+      setState(() {
+        turtleYaxis = -1.05;
+        gameover = true;
+        gameHasStarted = false;
+
+        if (score > bestscore) {
+          bestscore = score;
+        }
+      });
+      return true;
+    } else if (barrier1Xaxis < -0.25 &&
+        barrier1Xaxis > -1.2 &&
+        turtleYaxis > hitBoxYAxis) {
+      setState(() {
+        turtleYaxis = hitBoxYAxis;
+        gameover = true;
+        gameHasStarted = false;
+
+        if (score > bestscore) {
+          bestscore = score;
+        }
+      });
+      return true;
+    } else if (barrier2Xaxis < -0.25 &&
+        barrier2Xaxis > -1.2 &&
+        turtleYaxis > hitBoxYAxis) {
+      setState(() {
+        turtleYaxis = hitBoxYAxis;
+        gameover = true;
+        gameHasStarted = false;
+
+        if (score > bestscore) {
+          bestscore = score;
+        }
+      });
+      return true;
+    } else if (barrier1Xaxis < -0.25 &&
+        barrier1Xaxis > -1.2 &&
+        turtleYaxis < hitBoxYAxis -1.1) {
+      setState(() {
+        turtleYaxis = hitBoxYAxis -1.1;
+        gameover = true;
+        gameHasStarted = false;
+
+        if (score > bestscore) {
+          bestscore = score;
+        }
+      });
+      return true;
+    } else if (barrier2Xaxis < -0.25 &&
+        barrier2Xaxis > -1.2 &&
+        turtleYaxis < hitBoxYAxis -1) {
+      setState(() {
+        turtleYaxis = hitBoxYAxis -1;
+        gameover = true;
+        gameHasStarted = false;
+
+        if (score > bestscore) {
+          bestscore = score;
+        }
+      });
+      return true;
+    } 
+
+
+    return false;
   }
 
   void jump() {
@@ -93,8 +172,8 @@ class _HomepageState extends State<Homepage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(children: [
-        Expanded(
-          flex: 5,
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.85,
           child: GestureDetector(
             onTap: () {
               if (!gameover) {
@@ -175,9 +254,9 @@ class _HomepageState extends State<Homepage> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Pontuação',
-                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    Text(
+                      "Pontuação",
+                      style: const TextStyle(color: Colors.white, fontSize: 20),
                     ),
                     const SizedBox(height: 20),
                     Text(
