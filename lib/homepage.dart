@@ -131,9 +131,9 @@ class _HomepageState extends State<Homepage> {
       return true;
     } else if (barrier1Xaxis < -0.25 &&
         barrier1Xaxis > -1.2 &&
-        turtleYaxis < hitBoxYAxis -1.1) {
+        turtleYaxis < hitBoxYAxis - 1.1) {
       setState(() {
-        turtleYaxis = hitBoxYAxis -1.1;
+        turtleYaxis = hitBoxYAxis - 1.1;
         gameover = true;
         gameHasStarted = false;
 
@@ -144,9 +144,9 @@ class _HomepageState extends State<Homepage> {
       return true;
     } else if (barrier2Xaxis < -0.25 &&
         barrier2Xaxis > -1.2 &&
-        turtleYaxis < hitBoxYAxis -1) {
+        turtleYaxis < hitBoxYAxis - 1) {
       setState(() {
-        turtleYaxis = hitBoxYAxis -1;
+        turtleYaxis = hitBoxYAxis - 1;
         gameover = true;
         gameHasStarted = false;
 
@@ -155,8 +155,7 @@ class _HomepageState extends State<Homepage> {
         }
       });
       return true;
-    } 
-
+    }
 
     return false;
   }
@@ -263,6 +262,16 @@ class _HomepageState extends State<Homepage> {
                       score.toString(),
                       style: const TextStyle(color: Colors.white, fontSize: 20),
                     ),
+                  ],
+                ),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image(
+                      image: AssetImage('lib/images/020-logo.png'),
+                      height: 100,
+                      width: 100,
+                    )
                   ],
                 ),
                 Column(
